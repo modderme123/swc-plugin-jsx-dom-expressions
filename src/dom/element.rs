@@ -85,8 +85,6 @@ pub fn set_attr(
 
 #[derive(Debug)]
 enum AttrType<'a> {
-    None,
-    Unsupported(&'a JSXAttrValue),
     Literal(Option<&'a JSXAttrValue>),
     ExprAssign(&'a Expr),
     CallAssign(&'a Expr),
@@ -142,10 +140,8 @@ where
                             _ if key == "ref" => AttrType::Ref(expr),
                             _ if key == "style" => AttrType::Style(expr),
                             _ if key.starts_with("on") => AttrType::Event(expr),
-                            Expr::Member(_) => AttrType::ExprAssign(expr),
-                            Expr::Ident(_) => AttrType::ExprAssign(expr),
                             Expr::Call(_) => AttrType::CallAssign(expr),
-                            _ => AttrType::Unsupported(value),
+                            _ => AttrType::ExprAssign(expr),
                         },
                     }
                 } else {
@@ -160,8 +156,6 @@ where
             let mut key = aliases.get(key.as_str()).unwrap_or(&key_str);
 
             match value {
-                AttrType::None => {}
-                AttrType::Unsupported(_) => {}
                 AttrType::Event(expr) => {
                     if let Some(event) = key.strip_prefix("on") {
                         let event = event.to_ascii_lowercase();
